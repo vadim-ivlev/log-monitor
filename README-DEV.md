@@ -43,14 +43,24 @@ Elasticsearch по умолчанию использует директорию 
 
 --------------------------
 
+Код
+---
+Весь значимый код находится в директории `deploy/`. 
+
+
 Команды
 ----
 
 |   |   |
 |---|---|
-Старт          | `docker-compose up -d`
-Стоп           | `docker-compose stop`
-Полный останов | `docker-compose down`
+Старт          | `sh/up.sh`
+Стоп           | `sh/stop.sh`
+Полный останов | `sh/down.sh`
+Рестарт        | `sh/restart.sh`
+Проверка       | `sh/ps.sh`
+Деплой         | `sh/deploy.sh`
+
+
 
 
 READ
