@@ -1,0 +1,28 @@
+version: '3'
+services:
+
+    filebeat:
+        image: docker.elastic.co/beats/filebeat:7.6.2
+        container_name: filebeat
+        volumes: 
+            - ./filebeat-logs-console.yml:/usr/share/filebeat/filebeat.yml
+            - ./logs:/logs
+        # depends_on: 
+        #     - logstash
+        # чтобы не сыпало ошибки на экран
+        # command: filebeat
+    
+    # logstash:
+    #     image: docker.elastic.co/logstash/logstash:7.6.2
+    #     container_name: logstash
+    #     environment: 
+    #         LOG_LEVEL: fatal
+    #     volumes: 
+    #         - ./pipeline/:/usr/share/logstash/pipeline/
+    #     # загружаем конкретный конфигурационный файл
+    #     command: bin/logstash -f pipeline/first-pipeline.conf --config.reload.automatic
+
+networks:
+    default:
+        external:
+            name: logs_network    

@@ -1,0 +1,65 @@
+# I N P U T S ---------------------------------------------------------------------- 
+# filebeat.inputs:
+#   - type: stdin
+
+filebeat.inputs:
+  - type: log
+    fields:
+      app_id: auth-proxy
+      author: ivlev  
+    # Все фалы во всех поддиректориях /logs/ 
+    paths:
+      - /logs/**
+
+
+# P R O C E S S O R S ---------------------------------------------------------------
+
+# Процессоры для всех определенных источников
+processors:
+
+  # Добавляет поля
+  - add_fields:
+      target: filebeat_processor_fields
+      fields:
+        name: vadim
+        id: 'auth-proxy-proc'
+  
+  # Выбрасывает лишние поля
+  - drop_fields:
+      # when:
+      #     condition
+      fields: ["ecs", "host", "agent", "metadata"]
+      # Не генерируем ошибку в случае отсутствия полей
+      ignore_missing: true
+
+  # Декодирует поле содержащее строку JSON, замещая ее валидными объектами JSON
+  # - decode_json_fields:
+  #     fields: ["inner"]
+  
+  # dissect токенизирует входящую строку используя определенный паттерн
+  # - dissect:
+  #     tokenizer: '"%{service.name} - %{service.status}"'
+  #     field: "message"
+  #     target_prefix: ""
+
+# O U T P U T S --------------------------------------------------------------------------
+# разрешен только один 
+
+# output.logstash:
+#   enabled: true
+#   # hosts: ["logstash:5044"]
+#   hosts: ["elk:5044"]
+
+
+# output.console:
+#   enabled: false
+#   pretty: true
+
+output.elasticsearch:
+  hosts: ["elk:9200"]
+  # username: "filebeat_internal"
+  # password: "YOUR_PASSWORD" 
+setup.kibana:
+  host: "elk:5601"
+  # username: "my_kibana_user"  
+  # password: "YOUR_PASSWORD"  
