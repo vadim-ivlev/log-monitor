@@ -7,6 +7,7 @@ services:
         volumes: 
             - ./filebeat-logs-console.yml:/usr/share/filebeat/filebeat.yml
             - ./logs:/logs
+            - ./logstash-beats.crt:/etc/pki/tls/certs/logstash-beats.crt
         # depends_on: 
         #     - logstash
         # чтобы не сыпало ошибки на экран

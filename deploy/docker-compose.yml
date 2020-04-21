@@ -2,10 +2,20 @@ version: '3'
 services:
 
     elk:
-        image: sebp/elk
+        image: sebp/elk:761
         container_name: elk
-        # environment: 
+        environment: 
+            # чтобы не запускать отдельные части change 1 to 0
+            - ELASTICSEARCH_START:1
+            - LOGSTASH_START:1
+            - KIBANA_START:1
+            # если есть ошибка при запуске elasticsearch
         #     - MAX_MAP_COUNT=262144
+        
+        # чтобы избавиться от SSL и сертификатов в filebeat
+        # volumes: 
+        #     - ./conf/02-beats-input.conf:/etc/logstash/conf.d/02-beats-input.conf
+
         ports:
             # kibana
             - "5601:5601"

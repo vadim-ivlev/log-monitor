@@ -28,7 +28,7 @@ processors:
   - drop_fields:
       # when:
       #     condition
-      fields: ["ecs", "host", "agent", "metadata"]
+      fields: ["ecs", "host", "agent"]
       # Не генерируем ошибку в случае отсутствия полей
       ignore_missing: true
 
@@ -45,20 +45,32 @@ processors:
 # O U T P U T S --------------------------------------------------------------------------
 # разрешен только один 
 
+# output.console:
+#   enabled: false
+#   pretty: true
+
 # output.logstash:
 #   enabled: true
 #   # hosts: ["logstash:5044"]
 #   hosts: ["elk:5044"]
 
+output:
+  logstash:
+    enabled: true
+    hosts:
+      - elk:5044
+    timeout: 15
+    ssl:
+      certificate_authorities:
+          - /etc/pki/tls/certs/logstash-beats.crt
 
-# output.console:
-#   enabled: false
-#   pretty: true
 
 output.elasticsearch:
+  enabled: false
   hosts: ["elk:9200"]
   # username: "filebeat_internal"
   # password: "YOUR_PASSWORD" 
+
 setup.kibana:
   host: "elk:5601"
   # username: "my_kibana_user"  
