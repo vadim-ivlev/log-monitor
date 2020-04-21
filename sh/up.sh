@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # поднимаем 
-docker-compose -f deploy/docker-compose.yml up -d
+docker-compose up -d
 
 # поясняем
 sh/greetings.sh

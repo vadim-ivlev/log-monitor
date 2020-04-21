@@ -4,7 +4,7 @@
 
 echo "Starting stopped containers..."
 
-docker-compose -f deploy/docker-compose.yml start
+docker-compose start
 
 # поясняем
 sh/greetings.sh

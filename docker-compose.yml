@@ -1,0 +1,57 @@
+version: '3'
+services:
+
+    filebeat:
+        image: docker.elastic.co/beats/filebeat:7.6.2
+        container_name: filebeat
+        volumes: 
+            - ./configs/filebeat.yml:/usr/share/filebeat/filebeat.yml
+            - ./logs:/logs
+            - ./configs/logstash-beats.crt:/etc/pki/tls/certs/logstash-beats.crt
+        # depends_on: 
+        #     - logstash
+        # чтобы не сыпало ошибки на экран
+        # command: filebeat
+
+        
+    # logstash:
+    #     image: docker.elastic.co/logstash/logstash:7.6.2
+    #     container_name: logstash
+    #     environment: 
+    #         LOG_LEVEL: fatal
+    #     volumes: 
+    #         - ./pipeline/:/usr/share/logstash/pipeline/
+    #     # загружаем конкретный конфигурационный файл
+    #     command: bin/logstash -f pipeline/first-pipeline.conf --config.reload.automatic
+
+
+
+
+    elk:
+        image: sebp/elk:761
+        container_name: elk
+        environment: 
+            # чтобы не запускать отдельные части change 1 to 0
+            - LOGSTASH_START:0
+            - ELASTICSEARCH_START:1
+            - KIBANA_START:1
+            # если есть ошибка при запуске elasticsearch
+        #     - MAX_MAP_COUNT=262144
+        
+        # чтобы избавиться от SSL и сертификатов в filebeat
+        # volumes: 
+        #     - ./configs/02-beats-input.conf:/etc/logstash/conf.d/02-beats-input.conf
+
+        ports:
+            # kibana
+            - "5601:5601"
+            # elasticsearch
+            - "9200:9200"
+            # logstash
+            - "5044:5044"    
+
+
+networks:
+    default:
+        external:
+            name: auth_proxy_network    

@@ -3,4 +3,4 @@
 
 
 # гасим 
-docker-compose -f deploy/docker-compose.yml stop
+docker-compose stop

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# гасим 
-docker-compose -f deploy/docker-compose.yml down
+echo "гасим"
+docker-compose down
 
 
-# поднимаем 
-docker-compose -f deploy/docker-compose.yml up -d
+echo "поднимаем"
+docker-compose up -d
 
-# поясняем
+echo "поясняем"
 sh/greetings.sh

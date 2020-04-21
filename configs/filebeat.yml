@@ -26,12 +26,12 @@ processors:
   #       id: 'auth-proxy-proc'
   
   # Выбрасывает лишние поля
-  - drop_fields:
-      # when:
-      #     condition
-      fields: ["ecs", "host", "agent"]
-      # Не генерируем ошибку в случае отсутствия полей
-      ignore_missing: true
+  # - drop_fields:
+  #     # when:
+  #     #     condition
+  #     fields: ["ecs", "host", "agent"]
+  #     # Не генерируем ошибку в случае отсутствия полей
+  #     ignore_missing: true
 
   # Декодирует поле содержащее строку JSON, замещая ее валидными объектами JSON
   # - decode_json_fields:
@@ -69,7 +69,7 @@ output:
     timeout: 15
     ssl:
       certificate_authorities:
-          - /etc/pki/tls/certs/logstash-beats.crt
+        - /etc/pki/tls/certs/logstash-beats.crt
 
   elasticsearch:
     enabled: false
