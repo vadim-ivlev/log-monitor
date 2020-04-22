@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# поднимаем 
+echo "deleting log"
+rm ./logs/generated.log
+
+echo "поднимаем" 
 docker-compose up -d
 
-# поясняем
+echo "поясняем"
 sh/greetings.sh

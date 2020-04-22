@@ -11,6 +11,7 @@ filebeat.inputs:
       # Все фалы во всех поддиректориях /logs/ 
     paths:
       - /logs/**
+    scan_frequency: 10s
 
 
 # P R O C E S S O R S ---------------------------------------------------------------
@@ -37,11 +38,12 @@ processors:
   # - decode_json_fields:
   #     fields: ["inner"]
   
-  # dissect токенизирует входящую строку используя определенный паттерн
-  # - dissect:
-  #     tokenizer: '"%{service.name} - %{service.status}"'
-  #     field: "message"
-  #     target_prefix: ""
+  # dissect токенизирует входящую строку лога используя паттерн
+  - dissect:
+      # tokenizer: "%{date} %{time_string} - %{status} - %{msg} - %{wait}"
+      tokenizer: "%{timestamp} - %{status} - %{msg} - %{wait}"
+      field: "message"
+      target_prefix: "dissect"
 
 # O U T P U T S --------------------------------------------------------------------------
 # разрешен только один 
@@ -50,10 +52,6 @@ processors:
 #   enabled: false
 #   pretty: true
 
-# output.logstash:
-#   enabled: true
-#   # hosts: ["logstash:5044"]
-#   hosts: ["elk:5044"]
 
 output:
 
@@ -81,14 +79,10 @@ output:
 
 
 
-
-# output.elasticsearch:
-#   enabled: false
-#   hosts: ["elk:9200"]
-  # username: "filebeat_internal"
-  # password: "YOUR_PASSWORD" 
-
-setup.kibana:
-  host: "elk:5601"
-  # username: "my_kibana_user"  
-  # password: "YOUR_PASSWORD"  
+# If you plan to use the sample Kibana dashboards provided with Filebeat, 
+# configure the Kibana endpoint. You can skip this step if Kibana 
+# is running on the same host as Elasticsearch.
+# setup.kibana:
+#   host: "elk:5601"
+#   username: "my_kibana_user"  
+#   password: "YOUR_PASSWORD"  

@@ -1,6 +1,4 @@
 #!/bin/bash
 
-
-
-# гасим 
+echo "гасим" 
 docker-compose down

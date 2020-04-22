@@ -8,22 +8,8 @@ services:
             - ./configs/filebeat.yml:/usr/share/filebeat/filebeat.yml
             - ./logs:/logs
             - ./configs/logstash-beats.crt:/etc/pki/tls/certs/logstash-beats.crt
-        # depends_on: 
-        #     - logstash
         # чтобы не сыпало ошибки на экран
-        # command: filebeat
-
-        
-    # logstash:
-    #     image: docker.elastic.co/logstash/logstash:7.6.2
-    #     container_name: logstash
-    #     environment: 
-    #         LOG_LEVEL: fatal
-    #     volumes: 
-    #         - ./pipeline/:/usr/share/logstash/pipeline/
-    #     # загружаем конкретный конфигурационный файл
-    #     command: bin/logstash -f pipeline/first-pipeline.conf --config.reload.automatic
-
+        command: filebeat
 
 
 
@@ -32,7 +18,7 @@ services:
         container_name: elk
         environment: 
             # чтобы не запускать отдельные части change 1 to 0
-            - LOGSTASH_START:0
+            - LOGSTASH_START:1
             - ELASTICSEARCH_START:1
             - KIBANA_START:1
             # если есть ошибка при запуске elasticsearch
