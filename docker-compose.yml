@@ -5,11 +5,14 @@ services:
         image: docker.elastic.co/beats/filebeat:7.6.2
         container_name: filebeat
         volumes: 
+            # настроечный файл Filebeat
             - ./configs/filebeat.yml:/usr/share/filebeat/filebeat.yml
+            # здесь Filebeat следит за файлами логов
             - ./logs:/logs
+            # сертификат для связи с Logstash по SSL
             - ./configs/logstash-beats.crt:/etc/pki/tls/certs/logstash-beats.crt
-        # чтобы не сыпало ошибки на экран
-        command: filebeat
+        # чтобы не сыпало ошибки на экран для output.console определенного в ./configs/filebeat.yml
+        # command: filebeat
 
 
 
@@ -18,10 +21,10 @@ services:
         container_name: elk
         environment: 
             # чтобы не запускать отдельные части change 1 to 0
-            - LOGSTASH_START:1
-            - ELASTICSEARCH_START:1
-            - KIBANA_START:1
-            # если есть ошибка при запуске elasticsearch
+            - LOGSTASH_START=1
+            - ELASTICSEARCH_START=1
+            - KIBANA_START=1
+            # # если есть ошибка при запуске elasticsearch
         #     - MAX_MAP_COUNT=262144
         
         # чтобы избавиться от SSL и сертификатов в filebeat

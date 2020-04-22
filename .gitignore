@@ -1,7 +1,7 @@
 *DS_Store
 .idea
 .vscode/settings.json
-generated.log
+logrus.log
 
 # push.sh
 
