@@ -21,7 +21,7 @@ services:
         container_name: elk
         environment: 
             # чтобы не запускать отдельные части change 1 to 0
-            - LOGSTASH_START=1
+            - LOGSTASH_START=0
             - ELASTICSEARCH_START=1
             - KIBANA_START=1
             # # если есть ошибка при запуске elasticsearch

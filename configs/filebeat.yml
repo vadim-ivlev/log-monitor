@@ -100,7 +100,7 @@ output:
     
   # Логсташ. Смотри  https://www.elastic.co/guide/en/beats/filebeat/current/logstash-output.html
   logstash:
-    enabled: true
+    enabled: false
     # перечень хостов logstash
     hosts:
       - elk:5044
@@ -114,7 +114,7 @@ output:
   
   # Эластик. Смотри https://www.elastic.co/guide/en/beats/filebeat/current/elasticsearch-output.html
   elasticsearch:
-    enabled: false
+    enabled: true
     # список хостов elasticsearch
     hosts:
       - elk:9200
