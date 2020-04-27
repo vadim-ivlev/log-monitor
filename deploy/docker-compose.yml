@@ -71,7 +71,7 @@ services:
         # image: caddy
         container_name: log-monitor-caddy
         ports:
-            - "90:8080"
+            - "9094:8080"
         volumes:
             - ./configs/Caddyfile:/etc/caddy/Caddyfile
         environment:
