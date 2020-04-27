@@ -32,10 +32,10 @@ services:
             - ./logs:/logs
             # сертификат для связи с Logstash по SSL
             - ./configs/logstash-beats.crt:/etc/pki/tls/certs/logstash-beats.crt
-        # чтобы не сыпало ошибки на экран для output.console определенного в ./configs/filebeat.yml
-        #  и ослабить ограничения по доступу 
+        # чтобы не сыпало ошибки на экран для output.console определенного в ./configs/filebeat.yml убрать -e
+        #  и ослабить ограничения по доступу --strict.perms=false
         # https://www.elastic.co/guide/en/beats/libbeat/7.6/config-file-permissions.html
-        command: filebeat --strict.perms=false
+        command: filebeat -e --strict.perms=false
 
 
 
@@ -47,7 +47,7 @@ services:
             - LOGSTASH_START=0
             - ELASTICSEARCH_START=1
             - KIBANA_START=1
-            # # если есть ошибка при запуске elasticsearch
+            # # если есть ошибка при запуске elasticsearch на mac
             - MAX_MAP_COUNT=262144
         
         # чтобы избавиться от SSL и сертификатов в filebeat 
