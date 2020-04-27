@@ -46,7 +46,7 @@ services:
             - ELASTICSEARCH_START=1
             - KIBANA_START=1
             # # если есть ошибка при запуске elasticsearch
-        #     - MAX_MAP_COUNT=262144
+            - MAX_MAP_COUNT=262144
         
         # чтобы избавиться от SSL и сертификатов в filebeat 
         # volumes: 
