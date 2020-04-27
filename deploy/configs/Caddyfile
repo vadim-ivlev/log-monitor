@@ -1,0 +1,8 @@
+:8080 {
+    basicauth / {$ADMIN_USER} {$ADMIN_PASSWORD}
+    proxy / elk:5601 {
+            # transparent
+        }
+    errors stderr
+    tls off
+}

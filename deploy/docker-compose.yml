@@ -1,18 +1,54 @@
 version: '3'
 services:
 
+    # генерирует тестовый лог для проверки работоспособности системы
+    log-generator:
+        image: vadimivlev/log-generator:latest
+        container_name: log-generator
+        restart: unless-stopped
+        environment: 
+            # максимальная задержка добавления записей в лог
+            - MAX_DELAY=5000
+            # максимальное количество добавленных записей лога перед тем,
+            # как он будет перепорожден
+            - MAX_RECORDS=10
+            # имя файла лога внутри директории назначенной в параметре volumes:
+            - LOG_FILE=logrus.log
+        volumes: 
+            - ./logs:/app/logs
+
+
+
+    # следит за новыми файлами логов и посылает информацию о новых записях
+    # согласно настройкам определенным в filebeat.yml
+    log-monitor-filebeat:
+        image: docker.elastic.co/beats/filebeat:7.6.2
+        container_name: log-monitor-filebeat
+        restart: unless-stopped
+        volumes: 
+            # настроечный файл Filebeat
+            - ./configs/filebeat.yml:/usr/share/filebeat/filebeat.yml
+            # директория где Filebeat следит за файлами логов
+            - ./logs:/logs
+            # сертификат для связи с Logstash по SSL
+            - ./configs/logstash-beats.crt:/etc/pki/tls/certs/logstash-beats.crt
+        # чтобы не сыпало ошибки на экран для output.console определенного в ./configs/filebeat.yml
+        # command: filebeat
+
+
+
     elk:
         image: sebp/elk:761
         container_name: elk
         environment: 
             # чтобы не запускать отдельные части change 1 to 0
-            - LOGSTASH_START:1
-            - ELASTICSEARCH_START:1
-            - KIBANA_START:1
-            # если есть ошибка при запуске elasticsearch
+            - LOGSTASH_START=0
+            - ELASTICSEARCH_START=1
+            - KIBANA_START=1
+            # # если есть ошибка при запуске elasticsearch
         #     - MAX_MAP_COUNT=262144
         
-        # чтобы избавиться от SSL и сертификатов в filebeat
+        # чтобы избавиться от SSL и сертификатов в filebeat 
         # volumes: 
         #     - ./configs/02-beats-input.conf:/etc/logstash/conf.d/02-beats-input.conf
 
@@ -24,8 +60,27 @@ services:
             # logstash
             - "5044:5044"    
 
+    # добавлен для базовой аутентификации поскольку Кибана не имеет собственной.
+    # Параметры проксирования определены в Caddyfile
+    log-monitor-caddy:
+        # 0.10
+        image: stefanprodan/caddy
+        # 1.0.3
+        # image: abiosoft/caddy
+        # 2.0.0
+        # image: caddy
+        container_name: log-monitor-caddy
+        ports:
+            - "90:8080"
+        volumes:
+            - ./configs/Caddyfile:/etc/caddy/Caddyfile
+        environment:
+            - ADMIN_USER=${ADMIN_USER:-admin}
+            - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+        restart: unless-stopped
+        
 
 networks:
     default:
         external:
-            name: logs_network    
+            name: auth_proxy_network    

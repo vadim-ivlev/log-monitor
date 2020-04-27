@@ -57,3 +57,26 @@ logstash
 
 
 ```
+
+
+curl -u elastic -H 'Content-Type: application/x-ndjson' -XPOST 'localhost:9200/bank/_bulk?pretty' --data-binary @accounts.json
+curl -u elastic -H 'Content-Type: application/x-ndjson' -XPOST 'localhost:9200/shakespeare/_bulk?pretty' --data-binary @shakespeare.json
+curl -u elastic -H 'Content-Type: application/x-ndjson' -XPOST 'localhost:9200/_bulk?pretty' --data-binary @logs.jsonl
+
+
+
+curl -X PUT "localhost:9200/logstash-2015.05.20?pretty" -H 'Content-Type: application/json' -d'
+{
+  "mappings": {
+    "properties": {
+      "geo": {
+        "properties": {
+          "coordinates": {
+            "type": "geo_point"
+          }
+        }
+      }
+    }
+  }
+}
+'
