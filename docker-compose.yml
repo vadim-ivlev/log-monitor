@@ -2,6 +2,13 @@ version: '3'
 services:
 
     # генерирует тестовый лог для проверки работоспособности системы
+    # Проект https://git.rgwork.ru/ivlev/log-generator
+    #
+    # **log-generator** образует ротируемый лог logrus.log на диске , записи которого отсылаются
+    # filebeat-ом в elk в сохраняются в индексе filebeat-*.
+    # Настройки filebeat смотри в файле `configs/filebeat.yml`.
+    # log-generator также отправляет новые записи лога напрямую в Эластик в
+    # индекс logrus-*. См. код log-generator.
     log-generator:
         image: vadimivlev/log-generator:latest
         container_name: log-generator
@@ -38,7 +45,8 @@ services:
         command: filebeat -e --strict.perms=false
 
 
-
+    # Служба анализа логов сотоящая из приложений:
+    # Elasticsearch, Logstash, Kibana 
     elk:
         image: sebp/elk:761
         container_name: elk
@@ -65,7 +73,7 @@ services:
     # добавлен для базовой аутентификации поскольку Кибана не имеет собственной.
     # Параметры проксирования определены в Caddyfile
     log-monitor-caddy:
-        # 0.10
+        # 0.10 TODO: change to latest version
         image: stefanprodan/caddy
         # 1.0.3
         # image: abiosoft/caddy
