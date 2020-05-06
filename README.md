@@ -132,7 +132,50 @@ Elasticsearch по умолчанию использует директорию 
 Деплой                                      | `sh/deploy.sh`
 
 
+<br><br><br>
 
+--------------------------
+
+Инструкция
+===========
+**Как добавить анализ логов к существующему приложению**
+
+В docker-compose.yml существующего приложения необходимо внести следующие изменения:
+
+1. Необходимо чтобы приложение работало в сети `auth_proxy_network`, что скорее всего уже выполнено,
+поскольку предполагается, что приложения rgru работают под защитой сервера авторизации auth-proxy.
+Если этого нет добавьте следующие строчки в верхний уровень файла docker-compose.yml:
+
+    ```yml
+    networks:
+        default:
+            external:
+                name: auth_proxy_network    
+    ```
+
+2. Если приложение пишет файлы логов добавьте службу:
+
+    ```yml
+        filebeat:
+            image: docker.elastic.co/beats/filebeat:7.6.2
+            restart: unless-stopped
+            volumes: 
+                # настроечный файл Filebeat
+                - ./configs/filebeat.yml:/usr/share/filebeat/filebeat.yml
+                # директория где Filebeat следит за файлами логов
+                - ./logs:/logs
+            command: filebeat -e --strict.perms=false
+    ```
+    и добавьте настроечный файл filebeat.yml, пример которого можно посмотреть в `configs/filebeat.yml`.
+
+**или**
+
+3. Измените способ логирования приложения так, чтобы оно  посылало логи в Elasticsearch напрямую. 
+   Пример кода можно посмотреть в приложении log-generator 
+   ( <https://git.rgwork.ru/ivlev/log-generator/blob/master/main.go> )
+
+
+<br><br><br>
 
 Дополнительная информация
 ----
