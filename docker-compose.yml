@@ -1,99 +1,94 @@
 version: '3'
 services:
+  # генерирует тестовый лог для проверки работоспособности системы
+  # Проект https://git.rgwork.ru/ivlev/log-generator
+  #
+  # **log-generator** образует ротируемый лог logrus.log на диске , записи которого отсылаются
+  # filebeat-ом в elk в сохраняются в индексе filebeat-*.
+  # Настройки filebeat смотри в файле `configs/filebeat.yml`.
+  # log-generator также отправляет новые записи лога напрямую в Эластик в
+  # индекс logrus-*. См. код log-generator.
+  log-generator:
+    image: vadimivlev/log-generator:0.0.1
+    container_name: log-generator
+    restart: unless-stopped
+    environment:
+      # максимальная задержка добавления записей в лог
+      - MAX_DELAY=5000
+      # максимальное количество добавленных записей лога перед ротацией
+      - MAX_RECORDS=10
+      # имя файла лога внутри директории назначенной в параметре volumes:
+      - LOG_FILE=logrus.log
+      # адрес elasticsearch для прямой записи логов
+      - ELASTIC_URL=http://elk:9200
+      # хост elasticsearch для прямой записи логов
+      - ELASTIC_HOST=elk
+    volumes:
+      - ./logs:/app/logs
 
-    # генерирует тестовый лог для проверки работоспособности системы
-    # Проект https://git.rgwork.ru/ivlev/log-generator
-    #
-    # **log-generator** образует ротируемый лог logrus.log на диске , записи которого отсылаются
-    # filebeat-ом в elk в сохраняются в индексе filebeat-*.
-    # Настройки filebeat смотри в файле `configs/filebeat.yml`.
-    # log-generator также отправляет новые записи лога напрямую в Эластик в
-    # индекс logrus-*. См. код log-generator.
-    log-generator:
-        image: vadimivlev/log-generator:latest
-        container_name: log-generator
-        restart: unless-stopped
-        environment: 
-            # максимальная задержка добавления записей в лог
-            - MAX_DELAY=5000
-            # максимальное количество добавленных записей лога перед ротацией
-            - MAX_RECORDS=10
-            # имя файла лога внутри директории назначенной в параметре volumes:
-            - LOG_FILE=logrus.log
-            # адрес elasticsearch для прямой записи логов
-            - ELASTIC_URL=http://elk:9200
-            # хост elasticsearch для прямой записи логов
-            - ELASTIC_HOST=elk
-        volumes: 
-            - ./logs:/app/logs
+  # следит за новыми файлами логов и посылает информацию о новых записях
+  # согласно настройкам определенным в filebeat.yml
+  log-monitor-filebeat:
+    image: docker.elastic.co/beats/filebeat:7.6.2
+    container_name: log-monitor-filebeat
+    restart: unless-stopped
+    volumes:
+      # настроечный файл Filebeat
+      - ./configs/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      # директория где Filebeat следит за файлами логов
+      - ./logs:/logs
+      # сертификат для связи с Logstash по SSL
+      - ./configs/logstash-beats.crt:/etc/pki/tls/certs/logstash-beats.crt
+    # чтобы не сыпало ошибки на экран для output.console определенного в ./configs/filebeat.yml убрать -e
+    #  и ослабить ограничения по доступу --strict.perms=false
+    # https://www.elastic.co/guide/en/beats/libbeat/7.6/config-file-permissions.html
+    command: filebeat -e --strict.perms=false
 
+  # Служба анализа логов состоящая из приложений:
+  # Elasticsearch, Logstash, Kibana
+  elk:
+    image: sebp/elk:761
+    container_name: elk
+    environment:
+      # чтобы не запускать отдельные части change 1 to 0
+      - LOGSTASH_START=0
+      - ELASTICSEARCH_START=1
+      - KIBANA_START=1
+      # # если есть ошибка при запуске elasticsearch на mac
+      - MAX_MAP_COUNT=262144
 
+    # чтобы избавиться от SSL и сертификатов в filebeat
+    # volumes:
+    #     - ./configs/02-beats-input.conf:/etc/logstash/conf.d/02-beats-input.conf
 
-    # следит за новыми файлами логов и посылает информацию о новых записях
-    # согласно настройкам определенным в filebeat.yml
-    log-monitor-filebeat:
-        image: docker.elastic.co/beats/filebeat:7.6.2
-        container_name: log-monitor-filebeat
-        restart: unless-stopped
-        volumes: 
-            # настроечный файл Filebeat
-            - ./configs/filebeat.yml:/usr/share/filebeat/filebeat.yml
-            # директория где Filebeat следит за файлами логов
-            - ./logs:/logs
-            # сертификат для связи с Logstash по SSL
-            - ./configs/logstash-beats.crt:/etc/pki/tls/certs/logstash-beats.crt
-        # чтобы не сыпало ошибки на экран для output.console определенного в ./configs/filebeat.yml убрать -e
-        #  и ослабить ограничения по доступу --strict.perms=false
-        # https://www.elastic.co/guide/en/beats/libbeat/7.6/config-file-permissions.html
-        command: filebeat -e --strict.perms=false
+    ports:
+      # kibana
+      - '5601:5601'
+      # elasticsearch
+      - '9200:9200'
+      # logstash
+      - '5044:5044'
 
-
-    # Служба анализа логов состоящая из приложений:
-    # Elasticsearch, Logstash, Kibana 
-    elk:
-        image: sebp/elk:761
-        container_name: elk
-        environment: 
-            # чтобы не запускать отдельные части change 1 to 0
-            - LOGSTASH_START=0
-            - ELASTICSEARCH_START=1
-            - KIBANA_START=1
-            # # если есть ошибка при запуске elasticsearch на mac
-            - MAX_MAP_COUNT=262144
-        
-        # чтобы избавиться от SSL и сертификатов в filebeat 
-        # volumes: 
-        #     - ./configs/02-beats-input.conf:/etc/logstash/conf.d/02-beats-input.conf
-
-        ports:
-            # kibana
-            - "5601:5601"
-            # elasticsearch
-            - "9200:9200"
-            # logstash
-            - "5044:5044"    
-
-    # добавлен для базовой аутентификации поскольку Кибана не имеет собственной.
-    # Параметры проксирования определены в Caddyfile
-    log-monitor-caddy:
-        # 0.10 TODO: change to latest version
-        image: stefanprodan/caddy
-        # 1.0.3
-        # image: abiosoft/caddy
-        # 2.0.0
-        # image: caddy
-        container_name: log-monitor-caddy
-        restart: unless-stopped
-        ports:
-            - "9094:8080"
-        volumes:
-            - ./configs/Caddyfile:/etc/caddy/Caddyfile
-        environment:
-            - ADMIN_USER=${ADMIN_USER:-admin}
-            - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
-        
+  # добавлен для базовой аутентификации поскольку Кибана не имеет собственной.
+  # Параметры проксирования определены в Caddyfile
+  log-monitor-caddy:
+    # 0.10 TODO: change to latest version
+    image: stefanprodan/caddy
+    # 1.0.3
+    # image: abiosoft/caddy
+    # 2.0.0
+    # image: caddy
+    container_name: log-monitor-caddy
+    restart: unless-stopped
+    ports:
+      - '9094:8080'
+    volumes:
+      - ./configs/Caddyfile:/etc/caddy/Caddyfile
+    environment:
+      - ADMIN_USER=${ADMIN_USER:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
 
 networks:
-    default:
-        external:
-            name: auth_proxy_network    
+  default:
+    external:
+      name: auth_proxy_network
