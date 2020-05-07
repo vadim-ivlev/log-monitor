@@ -7,5 +7,3 @@
 	https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html
 
 2. Перенести тестовые логи в отдельное пространство Кибаны
-
-3. Изменить log-generator для записей логов напрямую в Эластик
