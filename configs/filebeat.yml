@@ -124,11 +124,12 @@ output:
     
     # Имя индекса elasticsearch. По умолчанию:
     # index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+    # index: "log-generator-filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
     # Если вы измените этот параметр, вам также необходимо настроить параметры 
     # setup.template.name и setup.template.pattern (см. Шаблон индекса Elasticsearch).
-    # index: "%{[fields.log_type]}-%{[agent.version]}-%{+yyyy.MM.dd}" 
+    # index: "log-generator-filebeat-%{[agent.version]}-%{+yyyy.MM.dd}" 
     # index: "%testlog-%{[agent.version]}-%{+yyyy.MM.dd}" 
-          
+        
 
 
 
@@ -145,3 +146,5 @@ output:
 # Filebeat автоматически загружает шаблон индекса после успешного подключения к Elasticsearch.
 # setup.template.name: "filebeat"
 # setup.template.pattern: "filebeat-*"
+
+setup.ilm.rollover_alias: "log-generator-filebeat"  

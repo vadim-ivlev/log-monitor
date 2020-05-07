@@ -16,11 +16,14 @@ services:
         environment: 
             # максимальная задержка добавления записей в лог
             - MAX_DELAY=5000
-            # максимальное количество добавленных записей лога перед тем,
-            # как он будет перепорожден
+            # максимальное количество добавленных записей лога перед ротацией
             - MAX_RECORDS=10
             # имя файла лога внутри директории назначенной в параметре volumes:
             - LOG_FILE=logrus.log
+            # адрес elasticsearch для прямой записи логов
+            - ELASTIC_URL=http://elk:9200
+            # хост elasticsearch для прямой записи логов
+            - ELASTIC_HOST=elk
         volumes: 
             - ./logs:/app/logs
 
@@ -45,7 +48,7 @@ services:
         command: filebeat -e --strict.perms=false
 
 
-    # Служба анализа логов сотоящая из приложений:
+    # Служба анализа логов состоящая из приложений:
     # Elasticsearch, Logstash, Kibana 
     elk:
         image: sebp/elk:761
@@ -80,6 +83,7 @@ services:
         # 2.0.0
         # image: caddy
         container_name: log-monitor-caddy
+        restart: unless-stopped
         ports:
             - "9094:8080"
         volumes:
@@ -87,7 +91,6 @@ services:
         environment:
             - ADMIN_USER=${ADMIN_USER:-admin}
             - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
-        restart: unless-stopped
         
 
 networks:

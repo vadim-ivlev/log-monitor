@@ -173,6 +173,10 @@ Elasticsearch по умолчанию использует директорию 
 **или**
 
 3. Измените способ логирования приложения так, чтобы оно  посылало логи в Elasticsearch напрямую. 
+   Сделать это можно вызвав следующую функцию во время инициализации логгера. 
+   ```go
+        addElasticHookToLogger(logger *logrus.Logger)
+   ```
    Пример кода можно посмотреть в приложении log-generator 
    ( <https://git.rgwork.ru/ivlev/log-generator/blob/master/main.go> )
 
