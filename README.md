@@ -3,6 +3,7 @@ log-monitor
 ========
 Размешен на <https://log-monitor.rg.ru>
 
+Управление кластером <http://localhost:9094/cerebro/#/overview?host=http:%2F%2Fes01:9200>
 
 Анализ логов серверных приложений RG.RU
  
