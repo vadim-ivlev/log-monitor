@@ -1,8 +1,23 @@
 :8080 {
     basicauth / {$ADMIN_USER} {$ADMIN_PASSWORD}
-    proxy / elk:5601 {
+    proxy /cerebro cerebro01:9000 {
+            transparent
+            without /cerebro
+        }
+    proxy / kibana01:5601 {
             # transparent
         }
+
+    errors stderr
+    tls off
+}
+:8081 {
+    basicauth / {$ADMIN_USER} {$ADMIN_PASSWORD}
+    proxy / cerebro01:9000 {
+            # transparent
+            without /cerebro
+        }
+
     errors stderr
     tls off
 }

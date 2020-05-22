@@ -117,7 +117,7 @@ output:
     enabled: true
     # список хостов elasticsearch
     hosts:
-      - elk:9200
+      - es01:9200
     # имя/пароль если необходимо
     # username: "filebeat_internal"
     # password: "YOUR_PASSWORD" 

@@ -1,0 +1,10 @@
+/**
+    A default environment
+    for Elasticsearch Developer tool vsCode extension
+
+*/
+
+{
+    "host": "http://localhost:9200",
+    "name": "dev"
+}

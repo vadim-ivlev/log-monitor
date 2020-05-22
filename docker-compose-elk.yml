@@ -1,5 +1,6 @@
 # Этот файл реализует мониторинг логов приложений 
-# используя кластер Elasticsearch 
+# используя контейнер sebp/elk:761, который содержит в себе
+# Elasticsearch, Kibana и Logstash 
 
 
 version: '3'
@@ -24,16 +25,16 @@ services:
       # имя файла лога внутри директории назначенной в параметре volumes:
       - LOG_FILE=logrus.log
       # адрес elasticsearch для прямой записи логов
-      - ELASTIC_URL=http://es01:9200
+      - ELASTIC_URL=http://elk:9200
       # хост elasticsearch для прямой записи логов
-      - ELASTIC_HOST=es01
+      - ELASTIC_HOST=elk
     volumes:
       - ./logs:/app/logs
 
   # следит за новыми файлами логов и посылает информацию о новых записях
   # согласно настройкам определенным в filebeat.yml
   log-monitor-filebeat:
-    image: docker.elastic.co/beats/filebeat:7.7.0
+    image: docker.elastic.co/beats/filebeat:7.6.2
     container_name: log-monitor-filebeat
     restart: unless-stopped
     volumes:
@@ -42,92 +43,36 @@ services:
       # директория где Filebeat следит за файлами логов
       - ./logs:/logs
       # сертификат для связи с Logstash по SSL
-      # - ./configs/logstash-beats.crt:/etc/pki/tls/certs/logstash-beats.crt
+      - ./configs/logstash-beats.crt:/etc/pki/tls/certs/logstash-beats.crt
     # чтобы не сыпало ошибки на экран для output.console определенного в ./configs/filebeat.yml убрать -e
     #  и ослабить ограничения по доступу --strict.perms=false
     # https://www.elastic.co/guide/en/beats/libbeat/7.6/config-file-permissions.html
     command: filebeat -e --strict.perms=false
 
+  # Служба анализа логов состоящая из приложений:
+  # Elasticsearch, Logstash, Kibana
+  elk:
+    image: sebp/elk:761
+    container_name: elk
+    environment:
+      # чтобы не запускать отдельные части change 1 to 0
+      - LOGSTASH_START=0
+      - ELASTICSEARCH_START=1
+      - KIBANA_START=1
+      # # если есть ошибка при запуске elasticsearch на mac
+      - MAX_MAP_COUNT=262144
 
-  # E L A S T I C S E A R C H   C L U S T E R  B E G I N -----------------------------------------------------------
-  es01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
-    container_name: es01
-    environment:
-      - node.name=es01
-      - cluster.name=es-log-monitor-cluster
-      - discovery.seed_hosts=es02,es03
-      - cluster.initial_master_nodes=es01,es02,es03
-      # - cluster.initial_master_nodes=es01
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      # добавить это к каждой службе эластик если свободного места на диске < 10%
-      # в противном случае шарды не будут двигаться
-      # - cluster.routing.allocation.disk.threshold_enabled=false
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    ports:
-      - 9200:9200
-    volumes:
-      - data01:/usr/share/elasticsearch/data
+    # чтобы избавиться от SSL и сертификатов в filebeat
+    # volumes:
+    #     - ./configs/02-beats-input.conf:/etc/logstash/conf.d/02-beats-input.conf
 
-  es02:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
-    container_name: es02
-    environment:
-      - node.name=es02
-      - cluster.name=es-log-monitor-cluster
-      - discovery.seed_hosts=es01,es03
-      - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - data02:/usr/share/elasticsearch/data
-  
-  es03:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
-    container_name: es03
-    environment:
-      - node.name=es03
-      - cluster.name=es-log-monitor-cluster
-      - discovery.seed_hosts=es01,es02
-      - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - data03:/usr/share/elasticsearch/data
-  # E L A S T I C S E A R C H   C L U S T E R  E N D -----------------------------------------------------------
-  
-  
-  
-  # data visualization for elasticsearch
-  kibana01:
-    image: docker.elastic.co/kibana/kibana:7.7.0
-    container_name: kibana01
     ports:
-      - 5601:5601
-    environment:
-      ELASTICSEARCH_HOSTS: '["http://es01:9200","http://es02:9200","http://es03:9200"]'
-  
-  # elasticsearch cluster visualization
-  cerebro01:
-    image: lmenezes/cerebro
-    container_name: cerebro01
-    ports:
-      - 9000:9000
-    environment:
-      CEREBRO_PORT: 9000
-    
+      # kibana
+      - '5601:5601'
+      # elasticsearch
+      - '9200:9200'
+      # logstash
+      - '5044:5044'
 
   # добавлен для базовой аутентификации поскольку Кибана не имеет собственной.
   # Параметры проксирования определены в Caddyfile
@@ -142,22 +87,15 @@ services:
     restart: unless-stopped
     ports:
       - '9094:8080'
-      - '9095:8081'
     volumes:
       - ./configs/Caddyfile:/etc/caddy/Caddyfile
     environment:
       - ADMIN_USER=${ADMIN_USER:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
-
-
-# volumes for elasticsearch data
-volumes:
-  data01:
-  data02:
-  data03:
+      
 
 # outer network to communicate with other services 
 networks:
-    default:
-      external:
-        name: auth_proxy_network
+  default:
+    external:
+      name: auth_proxy_network
