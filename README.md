@@ -5,6 +5,8 @@ log-monitor
 
 Управление кластером <http://localhost:9094/cerebro/#/overview?host=http:%2F%2Fes01:9200>
 
+Управление докер-контейнерами <http://localhost:9095>
+
 Анализ логов серверных приложений RG.RU
  
 

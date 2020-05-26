@@ -12,10 +12,7 @@
     tls off
 }
 :8081 {
-    basicauth / {$ADMIN_USER} {$ADMIN_PASSWORD}
-    proxy / cerebro01:9000 {
-            # transparent
-            without /cerebro
+    proxy / log-monitor-portainer:9000 {
         }
 
     errors stderr
