@@ -248,3 +248,11 @@ https://docs.google.com/document/d/1Q1ExyY36btdnTNe5co_pB4UdWNk41gY3rP1geg1LJBo/
 Полный останов контейнера                   | `sh/down.sh`
 Подготовка директории deploy                | `sh/build-deploy-directory.sh`
 Деплой                                      | `sh/deploy.sh`
+
+
+
+Перезапуск Caddy и перестройка контейнера если что то изменилость в docker-compose 
+```
+dc restart log-monitor-caddy  
+dc up -d --build log-monitor-caddy     
+```
