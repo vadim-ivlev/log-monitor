@@ -48,7 +48,7 @@ services:
     # https://www.elastic.co/guide/en/beats/libbeat/7.6/config-file-permissions.html
     command: filebeat -e --strict.perms=false
 
-
+  # Кластер elasticsearch
   # E L A S T I C S E A R C H   C L U S T E R  B E G I N -----------------------------------------------------------
   es01:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
@@ -113,7 +113,7 @@ services:
   
   
   
-  # data visualization for elasticsearch
+  # Kibana. Визуализация данных elasticsearch
   kibana01:
     image: docker.elastic.co/kibana/kibana:7.7.0
     container_name: kibana01
@@ -123,7 +123,7 @@ services:
     environment:
       ELASTICSEARCH_HOSTS: '["http://es01:9200","http://es02:9200","http://es03:9200"]'
   
-  # elasticsearch cluster visualization
+  # Cerebro. Визуализация кластера elasticsearch
   cerebro01:
     image: lmenezes/cerebro
     container_name: cerebro01
@@ -135,53 +135,33 @@ services:
       CEREBRO_PORT: 9000
     
 
-  # добавлен для базовой аутентификации поскольку Кибана не имеет собственной.
+  # Caddy HTTP сервер, добавлен для базовой аутентификации к Кибане
+  # и ограничения доступа к elasticsearch со стороны внешних программ.
   # Параметры проксирования определены в Caddyfile
   log-monitor-caddy:
-    # 0.10 TODO: change to latest version
-    image: stefanprodan/caddy
-    # 1.0.3
-    # image: abiosoft/caddy
-    # 2.0.0
-    # image: caddy
+    image: caddy:2.0.0-alpine
     container_name: log-monitor-caddy
     restart: unless-stopped
     ports:
-      - '9094:8080'
-      - '9095:8081'
+      - '9094:80'
+      - '9095:81'
     volumes:
       - ./configs/Caddyfile:/etc/caddy/Caddyfile
       - ./www:/www
-    environment:
-      - ADMIN_USER=${ADMIN_USER:-admin}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-rosgas2011}
 
 
-
-  # Управление докер контейнерами
+  # Portainer. Управление докер контейнерами хоста
   log-monitor-portainer:
-    image: portainer/portainer:latest
+    image: portainer/portainer:1.24.0
     container_name: log-monitor-portainer
     restart: unless-stopped
-    # ports:
-    #   - 8000:8000
-    #   - 9000:9000
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
 
-  # log-monitor-notebook:
-  #   image: jupyter/datascience-notebook
-  #   container_name: log-monitor-notebook
-  #   restart: unless-stopped
-  #   command: /opt/conda/bin/jupyter notebook  --ip="*" --port=8888 --notebook-dir=/home/jovyan/work --no-browser --allow-root  --NotebookApp.token=""
-  #   # ports:
-  #   #   - 8888:8888
-  #   volumes: 
-  #     - .:/home/jovyan/work
 
 
-# volumes for elasticsearch data
+# volumes for Elasticsearch data and Portainer
 volumes:
   data01:
   data02:
