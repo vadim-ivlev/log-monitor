@@ -1,22 +1,53 @@
+
+# Публичный сервер log-monitor.rg.ru
 :8080 {
-    basicauth * {
+
+    # Матчер @auth включает все маршруты за исключением portainer и www
+    @auth {
+        path *
+        not {
+            path /portainer/*
+            path /www*
+        } 
+    }
+
+    # Базовая аутентификация распространяется на все маршруты определенные в матчере @auth
+    basicauth @auth {
         admin JDJhJDEwJDhPZzNWMkZoeXlxVHgyZzNmcmY4ZC5GM1prSktvODlLN05jOUozamNvbGR3YnhvWnRubjhl
     }
     
+    # маршрут для контроля контейнеров докера
+    route /portainer/* {
+        uri strip_prefix /portainer
+        reverse_proxy log-monitor-portainer:9000
+    }
+
+    # маршрут статического сайта
+    route /www* {
+        # root * /
+        file_server  browse
+    }
+
+    # маршрут elasticsearch с базовой аутентификацией
     route /elasticsearch/* {
         uri strip_prefix /elasticsearch
         reverse_proxy  es01:9200 
     }
 
+    # маршрут cerebro, контроль кластера elasticsearch с базовой аутентификацией
     route /cerebro/* {
         uri strip_prefix /cerebro
         reverse_proxy cerebro01:9000 
     }
 
+    # Kibana. Корневой маршрут с базовой аутентификацией
     route * {
         reverse_proxy kibana01:5601     
     }    
 }
+
+# Сервер portainer.rg.ru. 
+# Действует только внутри сети RGRU.
 :8081 {
     @elasticsearch_get {
         method GET
@@ -27,6 +58,7 @@
         uri strip_prefix /elasticsearch
         reverse_proxy  es01:9200 
     }
+
     route /portainer/* {
         uri strip_prefix /portainer
         reverse_proxy log-monitor-portainer:9000
