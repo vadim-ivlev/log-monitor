@@ -4,11 +4,8 @@
 
     # Матчер @auth включает все маршруты за исключением portainer и www
     @auth {
-        path *
-        not {
-            path /portainer/*
-            path /www*
-        } 
+        not path /portainer/*
+        not path /www*
     }
 
     # Базовая аутентификация распространяется на все маршруты определенные в матчере @auth
