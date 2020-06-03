@@ -160,15 +160,24 @@ services:
       - portainer_data:/data
   
   # Jupiter notebooks
+  # log-monitor-notebook:
+  #   build: 
+  #       context: .
+  #       dockerfile: Dockerfile-anaconda3
+  #   image: log-monitor-notebook
+  #   container_name: log-monitor-notebook
+  #   restart: unless-stopped
+  #   volumes: 
+  #       - ./notebooks:/opt/notebooks
+
   log-monitor-notebook:
-    build: 
-        context: .
-        dockerfile: Dockerfile-anaconda3
-    image: log-monitor-notebook
+    image: jupyter/datascience-notebook:latest
     container_name: log-monitor-notebook
     restart: unless-stopped
+    command: /opt/conda/bin/jupyter notebook  --ip="*" --port=8888 --notebook-dir=/home/jovyan/work --no-browser --allow-root  --NotebookApp.token="abc"
     volumes: 
-        - ./notebooks:/opt/notebooks
+        - ./notebooks:/home/jovyan/work
+  
 
 # volumes for Elasticsearch data and Portainer
 volumes:

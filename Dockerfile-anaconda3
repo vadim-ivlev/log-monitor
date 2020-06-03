@@ -14,5 +14,8 @@ RUN pip install elasticsearch pandasticsearch
 # RUN pip install plotly==4.8.1
 RUN conda install -c plotly plotly=4.8.1
 
+# RUN conda uninstall tornado
+# RUN conda install -c prometeia tornado=5.1.1
+
 CMD /opt/conda/bin/jupyter notebook --notebook-dir=/opt/notebooks --ip='*' --port=8888 --no-browser --allow-root
 
