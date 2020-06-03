@@ -4,7 +4,7 @@ rm -rf deploy/logs
 rm -rf deploy/configs
 rm -rf deploy/www
 rm -rf deploy/notebooks
-rm -rf Dockerfile-anaconda3
+rm -rf deploy/Dockerfile-anaconda3
 rm -rf deploy/docker-compose.yml
 
 cp -R logs deploy/
