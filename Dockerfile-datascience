@@ -1,0 +1,16 @@
+FROM jupyter/datascience-notebook:latest
+
+
+# Устанавливаем пароль в jupyter_notebook_config.py ( https://jupyter-notebook.readthedocs.io/en/stable/public_server.html )
+RUN echo "c.NotebookApp.password = 'sha1:7f38b5a551a3:036f25154235424bdc7a55ace2ede4b7941487d9'" >> /home/jovyan/.jupyter/jupyter_notebook_config.py
+
+# драйверы для elasticsearch 
+RUN pip install elasticsearch pandasticsearch 
+# RUN pip install plotly==4.8.1
+# RUN conda install -c plotly plotly=4.8.1
+
+# RUN conda uninstall tornado
+# RUN conda install -c prometeia tornado=5.1.1
+
+# CMD /opt/conda/bin/jupyter notebook --notebook-dir=/home/jovyan/work --ip="*" --port=8888  --no-browser --allow-root  --NotebookApp.token="abc"
+CMD /opt/conda/bin/jupyter notebook --notebook-dir=/home/jovyan/work --ip="*" --port=8888  --no-browser --allow-root

@@ -171,10 +171,14 @@ services:
   #       - ./notebooks:/opt/notebooks
 
   log-monitor-notebook:
-    image: jupyter/datascience-notebook:latest
+    # build: 
+    #     context: .
+    #     dockerfile: Dockerfile-datascience 
+    image: vadimivlev/datascience-notebook-plus:latest
+    # image: jupyter/datascience-notebook:latest
     container_name: log-monitor-notebook
     restart: unless-stopped
-    command: /opt/conda/bin/jupyter notebook  --ip="*" --port=8888 --notebook-dir=/home/jovyan/work --no-browser --allow-root  --NotebookApp.token="abc"
+    # command: /opt/conda/bin/jupyter notebook  --ip="*" --port=8888 --notebook-dir=/home/jovyan/work --no-browser --allow-root  --NotebookApp.token="abc"
     volumes: 
         - notebook_data:/home/jovyan/work
   
