@@ -61,7 +61,10 @@
         reverse_proxy log-monitor-portainer:9000
     }
 
-    root * /www
-    file_server
+    reverse_proxy * log-monitor-notebook:8888
+
+    # root * /www
+    # file_server
+
 }
 
