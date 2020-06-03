@@ -1,11 +1,17 @@
 
 # Публичный сервер log-monitor.rg.ru
 :8080 {
+    # Кросдоменность
+    header * {
+        Access-Control-Allow-Origin *
+        Access-Control-Allow-Headers *
+    }
 
     # Матчер @auth включает все маршруты за исключением portainer и www
     @auth {
         not path /portainer/*
         not path /www*
+        not path /elasticsearch/*
     }
 
     # Базовая аутентификация распространяется на все маршруты определенные в матчере @auth
@@ -13,6 +19,28 @@
         admin JDJhJDEwJDhPZzNWMkZoeXlxVHgyZzNmcmY4ZC5GM1prSktvODlLN05jOUozamNvbGR3YnhvWnRubjhl
     }
     
+    @elasticsearch_get {
+        method GET OPTIONS
+        path /elasticsearch/* 
+    }
+
+    @elasticsearch_sql {
+        method POST OPTIONS
+        path /elasticsearch/_sql* 
+    }
+    
+    # маршрут elasticsearch без аутентификации
+    route @elasticsearch_get {
+        uri strip_prefix /elasticsearch
+        reverse_proxy  es01:9200 
+    }
+
+    # маршрут elasticsearch без аутентификации
+    route @elasticsearch_sql {
+        uri strip_prefix /elasticsearch
+        reverse_proxy  es01:9200 
+    }
+
     # маршрут для контроля контейнеров докера
     route /portainer/* {
         uri strip_prefix /portainer
@@ -25,11 +53,6 @@
         file_server  browse
     }
 
-    # маршрут elasticsearch с базовой аутентификацией
-    route /elasticsearch/* {
-        uri strip_prefix /elasticsearch
-        reverse_proxy  es01:9200 
-    }
 
     # маршрут cerebro, контроль кластера elasticsearch с базовой аутентификацией
     route /cerebro/* {
@@ -46,12 +69,28 @@
 # Сервер portainer.rg.ru. 
 # Действует только внутри сети RGRU.
 :8081 {
+    # Кросдоменность
+    header * {
+        Access-Control-Allow-Origin *
+        Access-Control-Allow-Headers *
+    }
+
     @elasticsearch_get {
-        method GET
+        method GET OPTIONS
         path /elasticsearch/* 
     }
 
+    @elasticsearch_sql {
+        method POST OPTIONS
+        path /elasticsearch/_sql* 
+    }
+    
     route @elasticsearch_get {
+        uri strip_prefix /elasticsearch
+        reverse_proxy  es01:9200 
+    }
+
+    route @elasticsearch_sql {
         uri strip_prefix /elasticsearch
         reverse_proxy  es01:9200 
     }
