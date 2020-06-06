@@ -3,5 +3,6 @@
 .vscode/settings.json
 logrus.log
 tutorial
+.ipnb_*
 # push.sh
 
