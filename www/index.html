@@ -6,44 +6,12 @@
     <title>Log chart</title>
     <link rel="icon" type="image/x-icon" href="/www/favicon.ico"/>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.0/milligram.min.css">
-    <style>
-        .cont {
-            border: 0px solid silver;
-            padding: 20px;
-            max-width:800px;
-            margin-left: auto;
-            margin-right: auto;
-            text-align: center;
-        }
-        #text-response {
-            max-height: 300px;
-            overflow: auto;
-            text-align: left;
-        }
-
-        #table-response {
-            max-width: 400px;
-            max-height: 300px;
-            overflow: auto;
-        }
-
-        #chart-response {
-            border: 0px solid silver;
-            width: 100%;
-            height:500px;
-        }
-
-    </style>
-
 </head>
 <body>
     <div class="cont">
-        <h3> Пример запросов к Эластик </h3>
-        <div id="chart-response"></div>
-        <div id="table-response"></div>
-        <pre id="text-response"></pre>
+        <h2> Пример запросов к Elasticsearch </h2>
+
+        <div id="chart-response" style="max-width: 800px;"></div>
         
         <a href="https://log-monitor.rg.ru/elasticsearch/">Elasticsearch</a><br>
         <a href="https://log-monitor.rg.ru/elasticsearch/_cat/nodes?format=txt&v">Elasticsearch Nodes</a><br>
@@ -52,14 +20,18 @@
     </div>
 
     <script>
-        // Принимает json возвращает HTML таблицы
-        function getTableHTML(data) {
-            var cols = data['columns']
-            var rows = data['rows']
-            var s = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`)
-                .reduce((s,v)=> s+=v,'')
-            return `<table> <tr><th>${cols[0].name}</th><th>${cols[1].name}</th></tr> ${s}</table>`
-        }
+        // Конечная точка Elasticsearch 
+        const url = "https://log-monitor.rg.ru/elasticsearch/_sql?format=json"
+        
+        // Запрос который будем выполнять
+        const query = { query: `
+        SELECT HISTOGRAM("@timestamp", INTERVAL 30 SECOND) as interval, 
+        count(*) as count
+        FROM "log-generator-logrus*"
+        GROUP by interval
+        ORDER BY interval DESC
+        LIMIT 30        
+        ` }
 
         // строит график
         function showPlot(containerElement, data) {
@@ -82,21 +54,9 @@
                 body: JSON.stringify(query),
             })
             var data = await res.json()
-            document.getElementById("text-response").innerText = JSON.stringify(data,null,2)
-            document.getElementById("table-response").innerHTML = getTableHTML(data)
             showPlot(document.getElementById('chart-response'), data)
         }
 
-
-        const url = "/elasticsearch/_sql?format=json"
-        const query = { query: `
-        SELECT HISTOGRAM("@timestamp", INTERVAL 30 SECOND) as interval, 
-        count(*) as count
-        FROM "log-generator-logrus*"
-        GROUP by interval
-        ORDER BY interval DESC
-        LIMIT 30        
-        ` }
         
         // делаем запросы каждые 3 сек
         var reqInterval = setInterval(()=> doQuery(url,query), 3000)
