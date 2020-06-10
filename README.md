@@ -59,7 +59,8 @@ log-monitor
 --------------
 docker-compose.yml
 
-<img src="images/log-monitor.png">
+<!-- <img src="images/log-**monitor**.png"> -->
+<img src="images/schema.png">
 <!-- <img src="images/ELK.png"> -->
 
 Контейнер log-monitor содержит кластер Elasticsearch, Kibana, 
