@@ -69,6 +69,10 @@ POST _sql?format=txt
   limit 40
   """
 }
+# curl -XPOST "https://log-monitor.rg.ru/elasticsearch/_sql?format=txt" \
+# -H 'Content-Type: application/json' \
+# -d'{  "query": "SELECT *  FROM \"log-generator-logrus*\"  LIMIT 40"}'
+
 
 
 # SQL query hist by 60 sec interval

@@ -1,16 +1,46 @@
 
 log-monitor
 ========
-Размешен на <https://log-monitor.rg.ru>
+Анализ логов серверных приложений RG.RU, сохраняемых в Elasticsearch с помощью Kibana
 
-Управление кластером <http://localhost:9094/cerebro/#/overview?host=http:%2F%2Fes01:9200>
+-------------------------------
+## Ссылки
 
-Управление докер-контейнерами <http://localhost:9095>
+- Конечная точка Elasticsearch для GET запросов <https://log-monitor.rg.ru/elasticsearch/>
 
-Анализ логов серверных приложений RG.RU
- 
+- POST запросы к Elasticsearch ограничены только SQL запросами <https://log-monitor.rg.ru/elasticsearch/_sql>
 
-Файлы размещены на: `dockerweb.rgwork.ru:/home/gitupdater/log-monitor-prod`
+    ```bash
+    curl -XPOST "https://log-monitor.rg.ru/elasticsearch/_sql?format=txt" \
+    -H 'Content-Type: application/json' \
+    -d'{  "query": "SELECT *  FROM \"log-generator-logrus*\"  LIMIT 40"}'
+    ```
+
+
+- Kibana размешена на 
+<https://log-monitor.rg.ru>
+
+- Управление кластером Elasticsearch (Cerebro) 
+<https://log-monitor.rg.ru/cerebro/#/overview?host=http:%2F%2Fes01:9200>
+
+- Управление Кластером Elasticsearch (Kibana) 
+<https://log-monitor.rg.ru/s/test-space/app/monitoring#/elasticsearch?_g=(cluster_uuid:YtlLbN3dTnyFviVMqb1j9w)>
+
+- Управление докер-контейнерами 
+<https://log-monitor.rg.ru/portainer/#/dashboard/>
+
+
+- Пример запросов к Elasticsearch из Javascript <br>
+  <https://log-monitor.rg.ru/www/><br> 
+  <https://observablehq.com/d/9e4bdac324ef3667>
+
+- Анализ данных c помощью Jupyter c доступом к серверам из сети докера. 
+ Доступ к Jupyter возможен только из внутренней сети RG. 
+ <https://portainer.rg.ru/>
+
+--------
+
+Файлы проекта размещены на: `dockerweb.rgwork.ru:/home/gitupdater/log-monitor-prod`
 
 
 Предпосылки
