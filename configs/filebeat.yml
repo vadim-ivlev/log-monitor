@@ -25,12 +25,13 @@ filebeat.inputs:
     # Следить за всеми фалами во всех поддиректориях /logs/ 
     paths:
       - /logs/**
+    close_inactive: 10m
     # частота сканирования директорий на наличие новых файлов
     scan_frequency: 10s
     # можно добавить новые поля к конкретному источнику
     fields:
       log_type: testlog
-      author: ivlev 
+      author: ivlev
     
     # Процессоры для конкретного источника могут быть добавлены здесь
     # processors:
