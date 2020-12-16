@@ -159,16 +159,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
   
-  # Jupiter notebooks
-  # log-monitor-notebook:
-  #   build: 
-  #       context: .
-  #       dockerfile: Dockerfile-anaconda3
-  #   image: log-monitor-notebook
-  #   container_name: log-monitor-notebook
-  #   restart: unless-stopped
-  #   volumes: 
-  #       - ./notebooks:/opt/notebooks
 
   log-monitor-notebook:
     # build: 
