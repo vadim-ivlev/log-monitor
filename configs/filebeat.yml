@@ -29,9 +29,9 @@ filebeat.inputs:
     # частота сканирования директорий на наличие новых файлов
     scan_frequency: 10s
     # можно добавить новые поля к конкретному источнику
-    fields:
-      log_type: testlog
-      author: ivlev
+    # fields:
+    #   log_type: testlog
+    #   author: ivlev
     
     # Процессоры для конкретного источника могут быть добавлены здесь
     # processors:
@@ -68,7 +68,7 @@ processors:
   - decode_json_fields:
       when:
         contains:
-          log.file.path: "logrus"
+          log.file.path: "json"
       fields: ["message"]
       # process_array: false
       # max_depth: 1
@@ -91,26 +91,25 @@ processors:
 
 
 output:
-
   # Консоль. смотри https://www.elastic.co/guide/en/beats/filebeat/current/console-output.html
-  console:
-    enabled: false
-    # красиво форматировать
-    pretty: true
+  # console:
+  #   enabled: false
+  #   # красиво форматировать
+  #   pretty: true
     
     
-  # Логсташ. Смотри  https://www.elastic.co/guide/en/beats/filebeat/current/logstash-output.html
-  logstash:
-    enabled: false
-    # перечень хостов logstash
-    hosts:
-      - elk:5044
-    # Секунды ожидания ответов от сервера Logstash до истечения времени ожидания. По умолчанию 30 секунд.
-    timeout: 15
-    # Параметры конфигурации SSL, таких как корневой CA для подключений Logstash.
-    ssl:
-      certificate_authorities:
-        - /etc/pki/tls/certs/logstash-beats.crt
+  # # Логсташ. Смотри  https://www.elastic.co/guide/en/beats/filebeat/current/logstash-output.html
+  # logstash:
+  #   enabled: false
+  #   # перечень хостов logstash
+  #   hosts:
+  #     - elk:5044
+  #   # Секунды ожидания ответов от сервера Logstash до истечения времени ожидания. По умолчанию 30 секунд.
+  #   timeout: 15
+  #   # Параметры конфигурации SSL, таких как корневой CA для подключений Logstash.
+  #   ssl:
+  #     certificate_authorities:
+  #       - /etc/pki/tls/certs/logstash-beats.crt
 
   
   # Эластик. Смотри https://www.elastic.co/guide/en/beats/filebeat/current/elasticsearch-output.html
@@ -128,8 +127,6 @@ output:
     # index: "log-generator-filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
     # Если вы измените этот параметр, вам также необходимо настроить параметры 
     # setup.template.name и setup.template.pattern (см. Шаблон индекса Elasticsearch).
-    # index: "log-generator-filebeat-%{[agent.version]}-%{+yyyy.MM.dd}" 
-    # index: "%testlog-%{[agent.version]}-%{+yyyy.MM.dd}" 
         
 
 
@@ -148,4 +145,4 @@ output:
 # setup.template.name: "filebeat"
 # setup.template.pattern: "filebeat-*"
 
-setup.ilm.rollover_alias: "log-generator-filebeat"  
+setup.ilm.rollover_alias: "app-logs"  

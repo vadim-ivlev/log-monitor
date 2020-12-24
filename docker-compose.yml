@@ -22,14 +22,14 @@ services:
       # максимальное количество добавленных записей лога перед ротацией
       - MAX_RECORDS=10
       # имя файла лога внутри директории назначенной в параметре volumes:
-      - LOG_FILE=logrus.log
+      - LOG_FILE=json-log-example.log
       # адрес elasticsearch для прямой записи логов
-      - ELASTIC_URL=http://es01:9200
+      # - ELASTIC_URL=http://es01:9200
       # хост elasticsearch для прямой записи логов
-      - ELASTIC_HOST=es01
+      # - ELASTIC_HOST=es01
     volumes:
-      - ./logs:/app/logs
-
+      - app-logs:/app/logs
+      
   # следит за новыми файлами логов и посылает информацию о новых записях
   # согласно настройкам определенным в filebeat.yml
   log-monitor-filebeat:
@@ -40,7 +40,7 @@ services:
       # настроечный файл Filebeat
       - ./configs/filebeat.yml:/usr/share/filebeat/filebeat.yml
       # директория где Filebeat следит за файлами логов
-      - ./logs:/logs
+      - app-logs:/logs
       # сертификат для связи с Logstash по SSL
       # - ./configs/logstash-beats.crt:/etc/pki/tls/certs/logstash-beats.crt
     # чтобы не сыпало ошибки на экран для output.console определенного в ./configs/filebeat.yml убрать -e
@@ -57,9 +57,11 @@ services:
     environment:
       - node.name=es01
       - cluster.name=es-log-monitor-cluster
-      - discovery.seed_hosts=es02,es03
-      - cluster.initial_master_nodes=es01,es02,es03
-      # - cluster.initial_master_nodes=es01
+
+      # - discovery.seed_hosts=es02,es03
+      # - cluster.initial_master_nodes=es01,es02,es03
+      - cluster.initial_master_nodes=es01
+
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       # добавить это к каждой службе эластик если свободного места на диске < 10%
@@ -74,41 +76,41 @@ services:
     volumes:
       - data01:/usr/share/elasticsearch/data
 
-  es02:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
-    container_name: es02
-    restart: unless-stopped
-    environment:
-      - node.name=es02
-      - cluster.name=es-log-monitor-cluster
-      - discovery.seed_hosts=es01,es03
-      - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - data02:/usr/share/elasticsearch/data
+  # es02:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+  #   container_name: es02
+  #   restart: unless-stopped
+  #   environment:
+  #     - node.name=es02
+  #     - cluster.name=es-log-monitor-cluster
+  #     - discovery.seed_hosts=es01,es03
+  #     - cluster.initial_master_nodes=es01,es02,es03
+  #     - bootstrap.memory_lock=true
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - data02:/usr/share/elasticsearch/data
   
-  es03:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
-    container_name: es03
-    restart: unless-stopped
-    environment:
-      - node.name=es03
-      - cluster.name=es-log-monitor-cluster
-      - discovery.seed_hosts=es01,es02
-      - cluster.initial_master_nodes=es01,es02,es03
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - data03:/usr/share/elasticsearch/data
+  # es03:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+  #   container_name: es03
+  #   restart: unless-stopped
+  #   environment:
+  #     - node.name=es03
+  #     - cluster.name=es-log-monitor-cluster
+  #     - discovery.seed_hosts=es01,es02
+  #     - cluster.initial_master_nodes=es01,es02,es03
+  #     - bootstrap.memory_lock=true
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - data03:/usr/share/elasticsearch/data
   # E L A S T I C S E A R C H   C L U S T E R  E N D -----------------------------------------------------------
   
   
@@ -123,16 +125,16 @@ services:
     environment:
       ELASTICSEARCH_HOSTS: '["http://es01:9200","http://es02:9200","http://es03:9200"]'
   
-  # Cerebro. Визуализация кластера elasticsearch
-  cerebro01:
-    image: lmenezes/cerebro
-    container_name: cerebro01
-    restart: unless-stopped
-    # left to try through auth-proxy
-    # ports:
-    #   - 9000:9000
-    environment:
-      CEREBRO_PORT: 9000
+  # # Cerebro. Визуализация кластера elasticsearch
+  # cerebro01:
+  #   image: lmenezes/cerebro
+  #   container_name: cerebro01
+  #   restart: unless-stopped
+  #   # left to try through auth-proxy
+  #   # ports:
+  #   #   - 9000:9000
+  #   environment:
+  #     CEREBRO_PORT: 9000
     
 
   # Caddy HTTP сервер, добавлен для базовой аутентификации к Кибане
@@ -152,7 +154,8 @@ services:
 
   # Portainer. Управление докер контейнерами хоста
   log-monitor-portainer:
-    image: portainer/portainer:1.24.0
+    # image: portainer/portainer:1.24.0
+    image: portainer/portainer-ce
     container_name: log-monitor-portainer
     restart: unless-stopped
     volumes:
@@ -160,26 +163,28 @@ services:
       - portainer_data:/data
   
 
-  log-monitor-notebook:
-    # build: 
-    #     context: .
-    #     dockerfile: Dockerfile-datascience 
-    image: vadimivlev/datascience-notebook-plus:latest
-    # image: jupyter/datascience-notebook:latest
-    container_name: log-monitor-notebook
-    restart: unless-stopped
-    # command: /opt/conda/bin/jupyter notebook  --ip="*" --port=8888 --notebook-dir=/home/jovyan/work --no-browser --allow-root  --NotebookApp.token="abc"
-    volumes: 
-        - notebook_data:/home/jovyan/work
+  # log-monitor-notebook:
+  #   # build: 
+  #   #     context: .
+  #   #     dockerfile: Dockerfile-datascience 
+  #   image: vadimivlev/datascience-notebook-plus:latest
+  #   # image: jupyter/datascience-notebook:latest
+  #   container_name: log-monitor-notebook
+  #   restart: unless-stopped
+  #   # command: /opt/conda/bin/jupyter notebook  --ip="*" --port=8888 --notebook-dir=/home/jovyan/work --no-browser --allow-root  --NotebookApp.token="abc"
+  #   volumes: 
+  #       - notebook_data:/home/jovyan/work
   
 
-# volumes for Elasticsearch data and Portainer
+# Данные
 volumes:
+  app-logs:
+    external: true
   data01:
   data02:
   data03:
   portainer_data:
-  notebook_data:
+  # notebook_data:
 
 # outer network to communicate with other services 
 networks:
