@@ -1,3 +1,2 @@
 
-add proxy to elastic
 

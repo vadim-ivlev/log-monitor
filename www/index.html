@@ -21,13 +21,14 @@
 
     <script>
         // Конечная точка Elasticsearch 
-        const url = "https://log-monitor.rg.ru/elasticsearch/_sql?format=json"
+        // const url = "https://log-monitor.rg.ru/elasticsearch/_sql?format=json"
+        const url = "/elasticsearch/_sql?format=json"
         
         // Запрос который будем выполнять
         const query = { query: `
         SELECT HISTOGRAM("@timestamp", INTERVAL 30 SECOND) as interval, 
         count(*) as count
-        FROM "log-generator-logrus*"
+        FROM "app-logs*"
         GROUP by interval
         ORDER BY interval DESC
         LIMIT 30        

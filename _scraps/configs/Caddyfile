@@ -49,10 +49,16 @@
 
     # маршрут статического сайта
     route /www* {
-        root * /
+        # root * /
         file_server  browse
     }
 
+
+    # маршрут cerebro, контроль кластера elasticsearch с базовой аутентификацией
+    route /cerebro/* {
+        uri strip_prefix /cerebro
+        reverse_proxy cerebro01:9000 
+    }
 
     # Kibana. Корневой маршрут с базовой аутентификацией
     route * {
@@ -94,6 +100,18 @@
         reverse_proxy log-monitor-portainer:9000
     }
     
+    # Без этих заголовков возникает ошибка "connecting to kernel"
+    # когда notebook пытается приконнектится к ядру
+    # https://aptro.github.io/server/architecture/2016/06/21/Jupyter-Notebook-Nginx-Setup.html
+    reverse_proxy /api/kernels/* log-monitor-notebook:8888 {
+        header_up Upgrade "websocket"
+        header_up Connection "Upgrade"
+    }
+
+    reverse_proxy * log-monitor-notebook:8888
+
+    # root * /www
+    # file_server
 
 }
 

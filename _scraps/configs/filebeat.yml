@@ -1,0 +1,148 @@
+# ************************************************************************************
+# Настроечный файл filebeat.
+
+# Filebeat следит за файлами логов из нескольких источников (input).
+# Преобразует новые записи в логах с помощью процессоров (processors)
+# и отправляет их в приемник данных (output), 
+# в качестве которого может выступать консоль, Логсташ или Эластик.
+
+# input -> processors -> |
+# input -> processors -> | -> processors -> output
+# input -> processors -> |
+
+# Смотри:  https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-overview.html
+
+# **************************************************************************************
+
+
+  
+# I N P U T S ---------------------------------------------------------------------- 
+# Источники данных
+
+filebeat.inputs:
+  # тип источника данных. Может быть Log, Stdin, Container, Kafka, Redis, UDP, Docker и т.д.
+  - type: log
+    # Следить за всеми фалами во всех поддиректориях /logs/ 
+    paths:
+      - /logs/**
+    close_inactive: 10m
+    # частота сканирования директорий на наличие новых файлов
+    scan_frequency: 10s
+    # можно добавить новые поля к конкретному источнику
+    # fields:
+    #   log_type: testlog
+    #   author: ivlev
+    
+    # Процессоры для конкретного источника могут быть добавлены здесь
+    # processors:
+    #   # Декодирует поле содержащее строку JSON, замещая ее валидными объектами JSON
+    #   - decode_json_fields:
+    #       when:
+    #         contains:
+    #           log.file.path: "logrus.log"
+    #       fields: ["message"]
+    #       target: "message_decoded"
+
+
+# P R O C E S S O R S ---------------------------------------------------------------
+
+# Глобальные процессоры для всех определенных источников сразу
+processors:
+
+  # Добавляет поля
+  # - add_fields:
+  #     target: filebeat_processor_fields
+  #     fields:
+  #       name: vadim
+  #       id: 'auth-proxy-proc'
+  
+  # Выбрасывает лишние поля
+  # - drop_fields:
+  #     # when:
+  #     #     condition
+  #     fields: ["ecs", "host", "agent"]
+  #     # Не генерируем ошибку в случае отсутствия полей
+  #     ignore_missing: true
+
+  # Декодирует поле содержащее строку JSON, замещая ее валидными объектами JSON
+  - decode_json_fields:
+      when:
+        contains:
+          log.file.path: "json"
+      fields: ["message"]
+      # process_array: false
+      # max_depth: 1
+      overwrite_keys: true
+      target: "message_decoded"
+      # add_error_key: true      
+  
+  # dissect токенизирует входящую строку лога используя паттерн
+  # - dissect:
+  #     # tokenizer: "%{date} %{time_string} - %{status} - %{msg} - %{wait}"
+  #     tokenizer: "%{timestamp} - %{status} - %{msg} - %{wait}"
+  #     field: "message"
+  #     target_prefix: "dissect"
+
+
+
+# O U T P U T S --------------------------------------------------------------------------
+# Приемники данных.
+# разрешен только один приемник данных с полем  enabled:true
+
+
+output:
+  # Консоль. смотри https://www.elastic.co/guide/en/beats/filebeat/current/console-output.html
+  # console:
+  #   enabled: false
+  #   # красиво форматировать
+  #   pretty: true
+    
+    
+  # # Логсташ. Смотри  https://www.elastic.co/guide/en/beats/filebeat/current/logstash-output.html
+  # logstash:
+  #   enabled: false
+  #   # перечень хостов logstash
+  #   hosts:
+  #     - elk:5044
+  #   # Секунды ожидания ответов от сервера Logstash до истечения времени ожидания. По умолчанию 30 секунд.
+  #   timeout: 15
+  #   # Параметры конфигурации SSL, таких как корневой CA для подключений Logstash.
+  #   ssl:
+  #     certificate_authorities:
+  #       - /etc/pki/tls/certs/logstash-beats.crt
+
+  
+  # Эластик. Смотри https://www.elastic.co/guide/en/beats/filebeat/current/elasticsearch-output.html
+  elasticsearch:
+    enabled: true
+    # список хостов elasticsearch
+    hosts:
+      - es01:9200
+    # имя/пароль если необходимо
+    # username: "filebeat_internal"
+    # password: "YOUR_PASSWORD" 
+    
+    # Имя индекса elasticsearch. По умолчанию:
+    # index: "filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+    # index: "log-generator-filebeat-%{[agent.version]}-%{+yyyy.MM.dd}"
+    # Если вы измените этот параметр, вам также необходимо настроить параметры 
+    # setup.template.name и setup.template.pattern (см. Шаблон индекса Elasticsearch).
+        
+
+
+
+# Для использования панелей Kibana, поставляемых с Filebeat, настройте конечную точку Kibana.
+# Вы можете пропустить этот шаг, если Kibana работает на том же хосте, что и Elasticsearch.
+# setup.kibana:
+#   host: "elk:5601"
+#   username: "my_kibana_user"  
+#   password: "YOUR_PASSWORD"  
+
+
+# В разделе setup.template указывается шаблон индекса, который будет использоваться в Elasticsearch.
+# Если загрузка шаблона включена (по умолчанию), 
+# Filebeat автоматически загружает шаблон индекса после успешного подключения к Elasticsearch.
+# setup.template.name: "filebeat"
+# setup.template.pattern: "filebeat-*"
+
+setup.ilm.rollover_alias: "app-logs"  
