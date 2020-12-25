@@ -13,7 +13,7 @@ log-monitor
     ```bash
     curl -XPOST "https://log-monitor.rg.ru/elasticsearch/_sql?format=txt" \
     -H 'Content-Type: application/json' \
-    -d'{  "query": "SELECT *  FROM \"app-logs*\"  LIMIT 40"}'
+    -d'{  "query": "SELECT \"@timestamp\", log.file.path, message  FROM \"app-logs*\"  LIMIT 40"}'    
     ```
 
 
@@ -94,11 +94,17 @@ log-monitor
 Поиск логов приложений
 -------------------------------
 Три способа:
-1. Из командной строки
+1. Из командной строки в JSON формате
+    ```bash
+    curl -XPOST "https://log-monitor.rg.ru/elasticsearch/_sql?format=json&pretty" \
+    -H 'Content-Type: application/json' \
+    -d'{  "query": "SELECT \"@timestamp\", log.file.path, message  FROM \"app-logs*\"  LIMIT 40"}'    
+    ```
+    В текстовом формате
     ```bash
     curl -XPOST "https://log-monitor.rg.ru/elasticsearch/_sql?format=txt" \
     -H 'Content-Type: application/json' \
-    -d'{  "query": "SELECT *  FROM \"app-logs*\"  LIMIT 40"}'
+    -d'{  "query": "SELECT \"@timestamp\", log.file.path, message  FROM \"app-logs*\"  LIMIT 40"}'    
     ```
    
 2. Из Кибаны
