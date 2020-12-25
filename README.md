@@ -107,8 +107,9 @@ log-monitor
     -d'{  "query": "SELECT \"@timestamp\", log.file.path, message  FROM \"app-logs*\"  LIMIT 40"}'    
     ```
    
-2. Из Кибаны
-3. Из плугина Chrome 
+2. Из Кибаны <https://log-monitor.rg.ru/app/kibana#/dev_tools/console>
+3. Из плугина Chrome [Elasticsearch Head](https://chrome.google.com/webstore/detail/elasticsearch-head/ffmkiejjmecolpfloofpjologoblkegm?hl=en-GB&utm_source=chrome-ntp-launcher) подсоединитесь к 
+   <https://log-monitor.rg.ru/elasticsearch/>
 
 
 
