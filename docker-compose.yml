@@ -42,9 +42,9 @@ services:
       - node.name=es01
       - cluster.name=es-log-monitor-cluster
 
-      # - discovery.seed_hosts=es02,es03
-      # - cluster.initial_master_nodes=es01,es02,es03
-      - cluster.initial_master_nodes=es01
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      # - cluster.initial_master_nodes=es01
 
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -60,41 +60,41 @@ services:
     volumes:
       - data01:/usr/share/elasticsearch/data
 
-  # es02:
-  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
-  #   container_name: es02
-  #   restart: unless-stopped
-  #   environment:
-  #     - node.name=es02
-  #     - cluster.name=es-log-monitor-cluster
-  #     - discovery.seed_hosts=es01,es03
-  #     - cluster.initial_master_nodes=es01,es02,es03
-  #     - bootstrap.memory_lock=true
-  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-  #   ulimits:
-  #     memlock:
-  #       soft: -1
-  #       hard: -1
-  #   volumes:
-  #     - data02:/usr/share/elasticsearch/data
+  es02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+    container_name: es02
+    restart: unless-stopped
+    environment:
+      - node.name=es02
+      - cluster.name=es-log-monitor-cluster
+      - discovery.seed_hosts=es01,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data02:/usr/share/elasticsearch/data
   
-  # es03:
-  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
-  #   container_name: es03
-  #   restart: unless-stopped
-  #   environment:
-  #     - node.name=es03
-  #     - cluster.name=es-log-monitor-cluster
-  #     - discovery.seed_hosts=es01,es02
-  #     - cluster.initial_master_nodes=es01,es02,es03
-  #     - bootstrap.memory_lock=true
-  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-  #   ulimits:
-  #     memlock:
-  #       soft: -1
-  #       hard: -1
-  #   volumes:
-  #     - data03:/usr/share/elasticsearch/data
+  es03:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.7.0
+    container_name: es03
+    restart: unless-stopped
+    environment:
+      - node.name=es03
+      - cluster.name=es-log-monitor-cluster
+      - discovery.seed_hosts=es01,es02
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data03:/usr/share/elasticsearch/data
   # E L A S T I C S E A R C H   C L U S T E R  E N D -----------------------------------------------------------
   
   
