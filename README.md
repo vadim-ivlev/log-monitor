@@ -109,7 +109,8 @@ log-monitor
    
 2. Из Кибаны <https://log-monitor.rg.ru/app/kibana#/dev_tools/console>
 3. Из плугина Chrome [Elasticsearch Head](https://chrome.google.com/webstore/detail/elasticsearch-head/ffmkiejjmecolpfloofpjologoblkegm?hl=en-GB&utm_source=chrome-ntp-launcher) подсоединитесь к 
-   <https://log-monitor.rg.ru/elasticsearch/>
+   <https://log-monitor.rg.ru/elasticsearch/>. На вкладке Any Request сделайте GET запрос к конечной точке _search, 
+   или POST  к конечной точке _sql. Другие запросы запрещены.
 
 
 
