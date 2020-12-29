@@ -72,7 +72,7 @@ log-monitor
         app-name:
         ...
             volumes: 
-                - app-logs:/logs/app-name/some.log
+                - app-logs:/logs
             ...
     
     и в корень файла
