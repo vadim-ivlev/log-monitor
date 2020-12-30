@@ -16,9 +16,11 @@ log-monitor
     -d'{  "query": "SELECT \"@timestamp\", log.file.path, message  FROM \"app-logs*\"  LIMIT 40"}'    
     ```
 
+- Индексы   <https://log-monitor.rg.ru/elasticsearch/_cat/indices?v&format=txt>
 
-- Kibana  
-<https://log-monitor.rg.ru>
+- Узлы <https://log-monitor.rg.ru/elasticsearch/_cat/nodes?format=txt&v>
+
+- Kibana  <https://log-monitor.rg.ru>
 
 
 - Управление докер-контейнерами 
@@ -66,66 +68,166 @@ log-monitor
 Настройка приложений для посылки логов в Эластик
 -----------------------------------------------
 
-1. Приложение должно сохранять логи в общий вольюм app-logs.
-   В docker-compose.yml добавьте
+Приложение должно сохранять логи в общий вольюм app-logs,  
+за файлами которого следит специально настроеный filebeat.
+В docker-compose.yml добавьте
 
+    services:
         app-name:
         ...
             volumes: 
                 - app-logs:/logs
             ...
     
-    и в корень файла
+    # внешний вольюм для логов
+    volumes:
+        app-logs:
+            external: true
 
-        volumes:
-            app-logs:
-                external: true
+Простейший способ заставить приложение сохранять сообщения об ошибках в файл –
+перенаправить stderr приложения в файл. Например в docker-compose.yml
 
-2. Запись в логе должна занимать одну строку.
-3. Сохраняйте логи в поддиректории названной по имени
+    command: ./myapp 2>/logs/myapp.log
+
+
+Другой способ - внутри самого приложения организовать запись в файл
+лога, например средствами пакета ruslog. 
+При этом нужно соблюдать следующие правила:
+
+1. Каждая запись в логе должна занимать одну строку.
+2. Сохраняйте логи в поддиректории названной по имени
     программы или включайте имя программы в имя файла лога. Так легче будет различать записи логов различных программ.
 
-4. (необязательно) Вы можете сохранять логи в формате JSON. 
-   Чтобы JSON распрарсился на поля перед посылкой в Эластик имя файла должно содержать подстроку "json".
+3. (необязательно) Вы можете сохранять логи в формате JSON. 
+   Для того чтобы JSON был разобран на поля перед посылкой в Эластик имя файла должно содержать подстроку "json".
 
 
 
 
-Поиск логов приложений
--------------------------------
-Три способа:
-1. Из командной строки в JSON формате
-    ```bash
-    curl -XPOST "https://log-monitor.rg.ru/elasticsearch/_sql?format=json&pretty" \
-    -H 'Content-Type: application/json' \
-    -d'{  "query": "SELECT \"@timestamp\", log.file.path, message  FROM \"app-logs*\"  LIMIT 40"}'    
-    ```
-    В текстовом формате
-    ```bash
-    curl -XPOST "https://log-monitor.rg.ru/elasticsearch/_sql?format=txt" \
-    -H 'Content-Type: application/json' \
-    -d'{  "query": "SELECT \"@timestamp\", log.file.path, message  FROM \"app-logs*\"  LIMIT 40"}'    
-    ```
+Просмотр логов приложений
+-------------------------
+Логи приложений сохраняются в индексе Эластик `app-logs-*`.
+Запись лога в индексе имеет поля 
+- **@timestamp** - Штамп даты времени записи лога. 
+- **log.file.path** - Название файла лога. 
+  Для фильтрации логов различных приложений.
+- **message** - Содержание записи лога приложения. 
+  Обычно содержит сообщение об ошибке.
+
+
+Логи приложений могут быть просмотрены через **API** логов
+1. **API** `END_POINT` = <https://log-monitor.rg.ru/elasticsearch>.
+   Запросы должны иметь заголовок `Content-Type: application/json`.
+
+- **POST SQL API**. Конечная точка :
+    `END_POINT/_sql`.
+    Допускаются только POST запросы в SQL формате.  
+
+    **Пример**: Найти логи приложения `auth-proxy`,
+    в сообщении которых присутствует слово `QueryRowMap`,
+    между указанными датами. Отсортировать результат в порядке
+    убывания даты и ограничить выдачу двадцатью записями.
+
+```sql
+POST https://log-monitor.rg.ru/elasticsearch/_sql?format=json&pretty
+{
+  "query": """
+  SELECT "@timestamp", log.file.path, message  
+  FROM "app-logs"
+  WHERE 
+  log.file.path = '/logs/auth-proxy.log'
+  AND MATCH(message, 'QueryRowMap')
+  AND "@timestamp" > '2020-12-28T23:03:08'
+  AND "@timestamp" < '2020-12-30T01:03:20.15'
+  ORDER BY "@timestamp" DESC
+  LIMIT 20
+  """
+}
+```
+
+- **GET API**. Конечная точка:
+    `END_POINT/_search`. 
+    
+    **Пример**: тот же запрос что и выше.
+
+```json
+GET https://log-monitor.rg.ru/elasticsearch/app-logs/_search
+{
+  "size" : 20,
+  "query" : {
+    "bool" : {
+      "must" : [
+        {
+          "term" : {
+            "log.file.path" : {
+              "value" : "/logs/auth-proxy.log"
+            }
+          }
+        },
+        {
+          "match" : {
+            "message" : {
+              "query" : "QueryRowMap"
+            }
+          }
+        },
+        {
+          "range" : {
+            "@timestamp" : {
+              "from" : "2020-12-28T23:03:08",
+              "to" : "2020-12-30T01:03:20.15"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "_source" : {
+    "includes" : ["log.file.path", "message","@timestamp"]
+  },
+  "sort" : [
+    {
+      "@timestamp" : {
+        "order" : "desc"
+      }
+    }
+  ]
+}
+
+```
+
+
+
+Можно опрашивать API с помощью команды curl.
+
+Получить логи JSON формате
+
+```bash
+curl -XPOST "https://log-monitor.rg.ru/elasticsearch/_sql?format=json&pretty" \
+-H 'Content-Type: application/json' \
+-d'{  "query": "SELECT \"@timestamp\", log.file.path, message  FROM \"app-logs*\"  LIMIT 40"}'    
+```
+Получить логи текстовом формате
+
+```bash
+curl -XPOST "https://log-monitor.rg.ru/elasticsearch/_sql?format=txt" \
+-H 'Content-Type: application/json' \
+-d'{  "query": "SELECT \"@timestamp\", log.file.path, message  FROM \"app-logs*\"  LIMIT 40"}'    
+```
    
-2. Из Кибаны <https://log-monitor.rg.ru/app/kibana#/dev_tools/console>
-3. Из плугина Chrome [Elasticsearch Head](https://chrome.google.com/webstore/detail/elasticsearch-head/ffmkiejjmecolpfloofpjologoblkegm?hl=en-GB&utm_source=chrome-ntp-launcher) подсоединитесь к 
+1. Доступ к логам из Кибаны <https://log-monitor.rg.ru/app/kibana#/dev_tools/console>
+2. Доступ к логам с помощью плугина Chrome [Elasticsearch Head](https://chrome.google.com/webstore/detail/elasticsearch-head/ffmkiejjmecolpfloofpjologoblkegm?hl=en-GB&utm_source=chrome-ntp-launcher). 
+   
+   Подсоединитесь к 
    <https://log-monitor.rg.ru/elasticsearch/>. На вкладке Any Request сделайте GET запрос к конечной точке _search, 
    или POST  к конечной точке _sql. Другие запросы запрещены.
 
 
 
+<br><br><br>
 
-
-
-doker-compose.yml
--------------
-
-- **log-script** приложение для генерации тестовых логов и
-- **log-monitor-filebeat** для посылки их в индекс `app-logs` **Elasticsearch**.
-
-
-Требования к системе
-------
+Требования к системе для запуска Elasticsearch
+-----------------------------------------
 
 * **Минимум 4 ГБ RAM выделено для Docker**
 
@@ -144,7 +246,7 @@ doker-compose.yml
 * **Доступ к TCP-порту 5044 от клиентов, генерирующих логи**
 
 
-Виртуальная память
+Виртуальная память для запуска Elasticsearch
 -----------
 
 Elasticsearch по умолчанию использует директорию `hybrid mmapfs / niofs` для хранения своих индексов. По умолчанию ограничения  `mmap` слишком малы, что может привести к нехватке памяти.
@@ -219,7 +321,7 @@ Elasticsearch по умолчанию использует директорию 
    ( <https://git.rgwork.ru/ivlev/log-generator/blob/master/main.go> )
 
 
--->
+
 Рекомендации по форматам логов
 ---------------------------
 
@@ -249,7 +351,7 @@ Elasticsearch по умолчанию использует директорию 
 Elasticsearch можно использовать для логирования метрик приложения, 
 как альтернатива  Prometheus-Grafana. 
 
-
+-->
 
 <br><br><br>
 

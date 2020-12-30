@@ -166,6 +166,61 @@ GET /log-generator-logrus-*/_search
   }
 }
 
+------------------------------------------
 
 
+
+
+POST _sql?format=json&pretty
+{
+  "query": """
+  SELECT "@timestamp", log.file.path, message  
+  FROM "app-logs"
+  WHERE 
+  MATCH(message, 'QueryRowMap')
+  AND "@timestamp" > '2020-12-28T23:03:08'
+  AND "@timestamp" < '2020-12-30T01:03:20.15'
+  ORDER BY "@timestamp" DESC
+  LIMIT 40
+  """
+}
+
+
+
+
+GET app-logs/_search
+{
+  "size" : 40,
+  "query" : {
+    "bool" : {
+      "must" : [
+        {
+          "match" : {
+            "message" : {
+              "query" : "QueryRowMap"
+            }
+          }
+        },
+        {
+          "range" : {
+            "@timestamp" : {
+              "from" : "2020-12-28T23:03:08",
+              "to" : "2020-12-30T01:03:20.15"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "_source" : {
+    "includes" : ["log.file.path", "message","@timestamp"]
+  },
+  "sort" : [
+    {
+      "@timestamp" : {
+        "order" : "desc"
+      }
+    }
+  ]
+}
 ```
