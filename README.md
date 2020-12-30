@@ -196,7 +196,28 @@ GET https://log-monitor.rg.ru/elasticsearch/app-logs/_search
 
 ```
 
+- **URI запросы в формате Lucene**. 
+  
+  Такие GET запросы укладываются в одну строку, выглядят как 
+  обычная ссылка и во многих случаях более удобны. Пример:
 
+  <a href='https://log-monitor.rg.ru/elasticsearch/app-logs/_search?pretty&size=3&sort=@timestamp:desc&_source_includes=@timestamp,message,log.file.path&q=log.file.path:"/logs/auth-proxy.log" AND @timestamp:["2020-12-28T23:07" TO "2020-12-29T01:10"] AND message:QueryRowMap'>
+  https://log-monitor.rg.ru/elasticsearch/app-logs/_search?pretty&size=3&sort=@timestamp:desc&_source_includes=@timestamp,message,log.file.path&q=log.file.path:"/logs/auth-proxy.log" AND @timestamp:["2020-12-28T23:07" TO "2020-12-29T01:10"] AND message:QueryRowMap
+  </a>
+  <br><br>
+
+  **Пояснение**:
+
+  - `https://log-monitor.rg.ru/elasticsearch` - конечная точка
+  - `/app-logs/_search` - искать в индексе app-logs
+  - `?pretty` - красиво форматировать ответ 
+  - `&size=3` - ограничить ответ тремя записями
+  - `&sort=@timestamp:desc` - сортировать по времени в порядке убывания
+  - `&_source_includes=@timestamp,message,log.file.path` - влючать в ответ только эти поля
+  - `&q=` - начало запроса Lucene
+  - `log.file.path:"/logs/auth-proxy.log"` - искать в логах auth-proxy
+  - `AND @timestamp:["2020-12-28T23:07" TO "2020-12-29T01:10"]` - искать между указанными датами
+  - `AND message:QueryRowMap` - сообщение лога должно содержать строчку "QueryRowMap"
 
 Можно опрашивать API с помощью команды curl.
 
