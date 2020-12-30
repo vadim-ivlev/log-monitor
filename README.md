@@ -60,7 +60,7 @@ log-monitor
 
 
 
-Приложения пишут логи в общий вольюм. Служба filebeat следит за файлами логов отправляюю новые строки в Эластик.
+Приложения пишут логи в общий вольюм. Служба filebeat следит за файлами логов отправляет новые строки в Эластик.
 
 <img src="images/log-monitor-ideas.png">
 
@@ -69,7 +69,7 @@ log-monitor
 -----------------------------------------------
 
 Приложение должно сохранять логи в общий вольюм app-logs,  
-за файлами которого следит специально настроеный filebeat.
+за файлами которого следит специально настроенный filebeat.
 В docker-compose.yml добавьте
 
     services:
@@ -213,7 +213,7 @@ GET https://log-monitor.rg.ru/elasticsearch/app-logs/_search
   - `?pretty` - красиво форматировать ответ 
   - `&size=3` - ограничить ответ тремя записями
   - `&sort=@timestamp:desc` - сортировать по времени в порядке убывания
-  - `&_source_includes=@timestamp,message,log.file.path` - влючать в ответ только эти поля
+  - `&_source_includes=@timestamp,message,log.file.path` - включать в ответ только эти поля
   - `&q=` - начало запроса Lucene
   - `log.file.path:"/logs/auth-proxy.log"` - искать в логах auth-proxy
   - `AND @timestamp:["2020-12-28T23:07" TO "2020-12-29T01:10"]` - искать между указанными датами
@@ -294,7 +294,7 @@ Elasticsearch по умолчанию использует директорию 
 
 1. **С использованием filebeat**. В контейнере работающего приложения должна быть запущена программа filebeat, 
    которая следит за файлами логов приложения и посылает новые записи логов в Эластик.
-2. **Приложение напрямую посылает информацию** о логируемых событиях в Эластик, возможно с параллельной записью в файл лога. 
+2. **Приложение напрямую посылает информацию** о логгируемых событиях в Эластик, возможно с параллельной записью в файл лога. 
    Сделать это возможно с помощью плагинов к logrus <https://github.com/interactive-solutions/go-logrus-elasticsearch>, 
    <https://github.com/sohlich/elogrus>, <https://github.com/go-extras/elogrus> 
 
@@ -418,7 +418,7 @@ https://docs.google.com/document/d/1Q1ExyY36btdnTNe5co_pB4UdWNk41gY3rP1geg1LJBo/
 
 
 
-Перезапуск Caddy и перестройка контейнера если что то изменилость в docker-compose 
+Перезапуск Caddy и перестройка контейнера если что то изменилост в docker-compose 
 ```
 dc restart log-monitor-caddy  
 dc up -d --build log-monitor-caddy     
