@@ -31,7 +31,7 @@
 
     @auth_es {
         method POST GET PUT OPTIONS
-        path /authes/* 
+        path /authes* 
     }
     
     # маршрут elasticsearch без аутентификации
