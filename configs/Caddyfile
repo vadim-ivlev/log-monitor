@@ -28,6 +28,11 @@
         method POST OPTIONS
         path /elasticsearch/_sql* 
     }
+
+    @elasticsearch_auth {
+        method POST GET PUT OPTIONS
+        path /auth_es/* 
+    }
     
     # маршрут elasticsearch без аутентификации
     route @elasticsearch_get {
@@ -38,6 +43,12 @@
     # маршрут elasticsearch без аутентификации
     route @elasticsearch_sql {
         uri strip_prefix /elasticsearch
+        reverse_proxy  es01:9200 
+    }
+
+    # маршрут elasticsearch с аутентификацией
+    route @elasticsearch_auth {
+        uri strip_prefix /auth_es
         reverse_proxy  es01:9200 
     }
 

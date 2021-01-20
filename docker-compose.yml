@@ -18,6 +18,7 @@ services:
 
       - discovery.seed_hosts=es02,es03
       - cluster.initial_master_nodes=es01,es02,es03
+
       # - cluster.initial_master_nodes=es01
 
       - bootstrap.memory_lock=true
@@ -117,7 +118,6 @@ volumes:
   data02:
   data03:
   portainer_data:
-  # notebook_data:
 
 # outer network to communicate with other services 
 networks:
