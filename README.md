@@ -31,7 +31,10 @@ log-monitor
   <https://log-monitor.rg.ru/www/><br> 
   <https://observablehq.com/d/9e4bdac324ef3667>
 
-
+- Подчиненный проект 
+  <a href="https://git.rgwork.ru/masterback/log-watcher">log-watcher</a>. 
+  Следит за файлами логов приложений
+   и посылает новые записи в Эластик.
 
 
 Файлы проекта размещены на: `dockerweb.rgwork.ru:/home/gitupdater/log-monitor-prod`
@@ -60,7 +63,8 @@ log-monitor
 
 
 
-Приложения пишут логи в общий вольюм. Служба filebeat следит за файлами логов отправляет новые строки в Эластик.
+Приложения пишут логи в общий вольюм. Служба filebeat проекта
+ <a href="https://git.rgwork.ru/masterback/log-watcher">log-watcher</a> следит за файлами логов отправляет новые строки в Эластик.
 
 <img src="images/log-monitor-ideas.png">
 
