@@ -29,9 +29,9 @@
         path /elasticsearch/_sql* 
     }
 
-    @elasticsearch_auth {
+    @auth_es {
         method POST GET PUT OPTIONS
-        path /auth_es/* 
+        path /authes/* 
     }
     
     # маршрут elasticsearch без аутентификации
@@ -47,8 +47,8 @@
     }
 
     # маршрут elasticsearch с аутентификацией
-    route @elasticsearch_auth {
-        uri strip_prefix /auth_es
+    route @auth_es {
+        uri strip_prefix /authes
         reverse_proxy  es01:9200 
     }
 
